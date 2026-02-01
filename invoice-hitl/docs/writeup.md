@@ -60,6 +60,8 @@ I treated this as a pragmatic extraction + triage problem, not a “train a mode
 ### Pipeline: 
 
 ![Architecture](images/Cloudfactory_task_architecture.png)
+
+
 Part 1:
 1. **Preprocess** (resize, grayscale, mild denoise)
 2. **OCR** (Tesseract) → text + word confidence
