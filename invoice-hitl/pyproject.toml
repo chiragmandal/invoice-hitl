@@ -1,0 +1,24 @@
+[project]
+name = "invoice-hitl"
+version = "0.1.0"
+description = "Local invoice field extraction + confidence + human-in-the-loop routing"
+requires-python = ">=3.10"
+dependencies = [
+  "datasets>=2.19.0",
+  "pydantic>=2.6.0",
+  "numpy>=1.26.0",
+  "pillow>=10.0.0",
+  "opencv-python-headless>=4.8.0",
+  "pytesseract>=0.3.10",
+  "python-dateutil>=2.9.0",
+  "rapidfuzz>=3.6.0",
+  "requests>=2.31.0",
+  "gradio>=4.0.0",
+  "pandas>=2.0.0"
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

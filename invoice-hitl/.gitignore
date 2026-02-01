@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.env
+
+# Outputs / debug
+outputs/
+*.jsonl
+*.log
+
+# Mac
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# HF datasets cache (optional but recommended if it appears)
+.cache/

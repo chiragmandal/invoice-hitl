@@ -1,0 +1,85 @@
+version: "3.9"
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama:/root/.ollama
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+      start_period: 10s
+
+  ollama_pull:
+    image: ollama/ollama:latest
+    container_name: ollama_pull
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-qwen2.5:3b-instruct}
+    entrypoint: ["/bin/sh", "-lc"]
+    command: ["ollama pull ${OLLAMA_MODEL:-qwen2.5:3b-instruct}"]
+    restart: "no"
+
+  app:
+    build: .
+    container_name: invoice_hitl_app
+    environment:
+      - HF_DATASET_ID=${HF_DATASET_ID:-}
+      - HF_DATASET_SPLIT=${HF_DATASET_SPLIT:-train}
+      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-qwen2.5:3b-instruct}
+      - USE_LLM=${USE_LLM:-1}
+      - OUTPUT_PATH=/app/outputs/predictions.jsonl
+      - DEBUG_DIR=/app/outputs/debug
+      - LIMIT=${LIMIT:-25}
+    volumes:
+      - ./outputs:/app/outputs
+      - hf_cache:/root/.cache/huggingface
+      - hf_cache:/root/.cache/datasets
+      - hf_cache:/root/.cache/transformers
+    depends_on:
+      ollama_pull:
+        condition: service_completed_successfully
+    restart: on-failure:3
+    command: ["python", "-m", "invoice_hitl.run"]
+  ui:
+    build: .
+    container_name: invoice_hitl_ui
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-qwen2.5:3b-instruct}
+      - USE_LLM=${USE_LLM:-1}
+      - HF_DATASET_ID=${HF_DATASET_ID:-}
+      - HF_DATASET_SPLIT=${HF_DATASET_SPLIT:-train}
+      - LIMIT=${LIMIT:-25}
+
+      # Gradio bind settings
+      - GRADIO_SERVER_NAME=0.0.0.0
+      - GRADIO_SERVER_PORT=7860
+    ports:
+      - "7860:7860"
+    volumes:
+      - ./outputs:/app/outputs
+      # Uncomment only if you want live code editing from host (can override packaged code)
+      # - ./:/app
+    depends_on:
+      ollama:
+        condition: service_healthy
+      ollama_pull:
+        condition: service_completed_successfully
+    restart: on-failure:3
+    command: ["python", "-m", "invoice_hitl.ui_gradio"]
+
+
+volumes:
+  ollama:
+  hf_cache:

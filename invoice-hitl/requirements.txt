@@ -1,0 +1,6 @@
+# Core OCR library (includes PDF/image loaders + OCR predictor)
+# docTR requires Python >= 3.10
+python-doctr>=0.11
+
+# Optional, but recommended for smoother logo scaling in the GUI
+Pillow>=10.0
